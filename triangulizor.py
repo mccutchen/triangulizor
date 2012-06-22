@@ -1,23 +1,35 @@
-#!/bin/env python
+#!/usr/bin/env python2.7
 
 """
 triangulizor.py
 
 Applies a "triangular pixel" effect to images. Inspired by:
-http://revdancatt.com/2012/03/31/the-pxl-effect-with-javascript-and-canvas-and-maths/
+ * http://revdancatt.com/2012/03/31/the-pxl-effect-with-javascript-and-canvas-and-maths/
+ * https://github.com/revdancatt/GuardianAmbientHeadlineRadio
 """
+
+import argparse
+from cStringIO import StringIO
+import logging
+import os
+import re
+import sys
+import urllib2
 
 import Image
 import ImageDraw
 
 
-def triangulize(original_image, tile_size):
+def triangulize(image, tile_size):
     """Processes the given image by breaking it down into tiles of the given
     size and applying a triangular effect to each tile. Returns the processed
     image.
     """
-    assert tile_size % 2 == 0
-    image = prep_image(original_image, tile_size)
+    assert isinstance(image, Image.Image), type(image)
+    assert isinstance(tile_size, int) and tile_size % 2 == 0
+    # Preprocess image to make sure it's at a size we can handle
+    image = prep_image(image, tile_size)
+    # Get pixmap (for direct pixel access) and draw objects for the image.
     pix = image.load()
     draw = ImageDraw.Draw(image)
     for x, y in iter_tiles(image, tile_size):
@@ -145,8 +157,6 @@ def prep_image(image, tile_size):
     """Takes an image and a tile size and returns a possibly cropped version
     of the image that is evenly divisible in both dimensions by the tile size.
     """
-    assert isinstance(image, Image.Image)
-    assert isinstance(tile_size, int)
     w, h = image.size
     new_w, rem_w = divmod(w, tile_size)
     new_h, rem_h = divmod(h, tile_size)
@@ -169,6 +179,34 @@ def iter_tiles(image, tile_size):
 
 
 if __name__ == '__main__':
-    tile_size = 10
-    image = triangulize(Image.open('test.jpg'), tile_size)
+
+    def path_or_url(x):
+        if re.match(r'^https?://', x):
+            try:
+                return StringIO(urllib2.urlopen(x).read())
+            except urllib2.URLError, e:
+                raise argparse.ArgumentTypeError(str(e))
+        elif os.path.isfile(x):
+            return open(x, 'rb')
+        else:
+            msg = '%r not found' % x
+            raise argparse.ArgumentTypeError(msg)
+
+    arg_parser = argparse.ArgumentParser(
+        description='Applies a "triangular pixel" effect to an image.')
+    arg_parser.add_argument(
+        'infile', nargs='?', default=sys.stdin, type=path_or_url,
+        help='Image to process (path or URL; defaults to STDIN)')
+    arg_parser.add_argument(
+        'outfile', nargs='?', default=sys.stdout,
+        type=argparse.FileType('wb'))
+    arg_parser.add_argument(
+        '-t', '--tile-size', type=int, default=20,
+        help='Tile size (must be divisible by 2; defaults to 20)')
+    arg_parser.add_argument(
+        '-o', '--output',help='Output path (defaults to STDOUT)')
+
+    args = arg_parser.parse_args()
+    image = triangulize(Image.open(args.infile), args.tile_size)
+    image.save(args.outfile, 'png')
     image.show()
