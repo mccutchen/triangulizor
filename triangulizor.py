@@ -158,14 +158,14 @@ def prep_image(image, tile_size):
     of the image that is evenly divisible in both dimensions by the tile size.
     """
     w, h = image.size
-    new_w, rem_w = divmod(w, tile_size)
-    new_h, rem_h = divmod(h, tile_size)
+    x_tiles = w / tile_size # floor division
+    y_tiles = h / tile_size
+    new_w = x_tiles * tile_size
+    new_h = y_tiles * tile_size
     if new_w == w and new_h == h:
         return image
     else:
-        dw = rem_w / 2
-        dh = rem_h / 2
-        crop_bounds = (dw, dh, w - dw, h - dh)
+        crop_bounds = (0, 0, new_w, new_h)
         return image.crop(crop_bounds)
 
 def iter_tiles(image, tile_size):
