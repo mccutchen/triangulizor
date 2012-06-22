@@ -1,13 +1,5 @@
 #!/usr/bin/env python2.7
 
-"""
-triangulizor.py
-
-Applies a "triangular pixel" effect to images. Inspired by:
- * http://revdancatt.com/2012/03/31/the-pxl-effect-with-javascript-and-canvas-and-maths/
- * https://github.com/revdancatt/GuardianAmbientHeadlineRadio
-"""
-
 import argparse
 from cStringIO import StringIO
 import logging
@@ -210,7 +202,8 @@ if __name__ == '__main__':
         help='Image to process (path or URL; defaults to STDIN)')
     arg_parser.add_argument(
         'outfile', nargs='?', default=sys.stdout,
-        type=argparse.FileType('wb'))
+        type=argparse.FileType('wb'),
+        help='Output file (defaults to STDOUT)')
     arg_parser.add_argument(
         '-t', '--tile-size', type=even_int, default=20,
         help='Tile size (must be divisible by 2; defaults to 20)')
