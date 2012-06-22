@@ -209,13 +209,14 @@ if __name__ == '__main__':
         '-t', '--tile-size', type=int, default=20,
         help='Tile size (must be divisible by 2; defaults to 20)')
     arg_parser.add_argument(
-        '-o', '--output',help='Output path (defaults to STDOUT)')
-    arg_parser.add_argument(
         '-v', '--verbose', default=False, action='store_const', const=True,
         help='Verbose output')
     arg_parser.add_argument(
         '-vv', default=False, action='store_const', const=True,
         help='Very verbose output')
+    arg_parser.add_argument(
+        '-d', '--debug', default=False, action='store_const', const=True,
+        help='Immediately display image instead of writing to OUTFILE.')
 
     args = arg_parser.parse_args()
 
@@ -225,5 +226,7 @@ if __name__ == '__main__':
 
     inbuffer = StringIO(args.infile.read())
     image = triangulize(Image.open(inbuffer), args.tile_size)
-    image.save(args.outfile, 'png')
-    image.show()
+    if args.debug:
+        image.show()
+    else:
+        image.save(args.outfile, 'png')
