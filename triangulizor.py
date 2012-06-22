@@ -183,7 +183,7 @@ if __name__ == '__main__':
     def path_or_url(x):
         if re.match(r'^https?://', x):
             try:
-                return StringIO(urllib2.urlopen(x).read())
+                return urllib2.urlopen(x)
             except urllib2.URLError, e:
                 raise argparse.ArgumentTypeError(str(e))
         elif os.path.isfile(x):
@@ -207,6 +207,8 @@ if __name__ == '__main__':
         '-o', '--output',help='Output path (defaults to STDOUT)')
 
     args = arg_parser.parse_args()
-    image = triangulize(Image.open(args.infile), args.tile_size)
+
+    inbuffer = StringIO(args.infile.read())
+    image = triangulize(Image.open(inbuffer), args.tile_size)
     image.save(args.outfile, 'png')
     image.show()
