@@ -27,8 +27,11 @@ def triangulize(image, tile_size):
     """
     assert isinstance(image, Image.Image), type(image)
     assert isinstance(tile_size, int) and tile_size % 2 == 0
+    logging.info('Input image size: %r', image.size)
+    logging.info('Tile size: %r', tile_size)
     # Preprocess image to make sure it's at a size we can handle
     image = prep_image(image, tile_size)
+    logging.info('Prepped image size: %r', image.size)
     # Get pixmap (for direct pixel access) and draw objects for the image.
     pix = image.load()
     draw = ImageDraw.Draw(image)
@@ -40,6 +43,8 @@ def process_tile(tile_x, tile_y, tile_size, pix, draw, image):
     """Process a tile whose top left corner is at the given x and y
     coordinates.
     """
+    logging.debug('Processing tile (%d, %d)', tile_x, tile_y)
+
     # Calculate average color for each "triangle" in the given tile
     n, e, s, w = triangle_colors(tile_x, tile_y, tile_size, pix)
 
@@ -205,8 +210,18 @@ if __name__ == '__main__':
         help='Tile size (must be divisible by 2; defaults to 20)')
     arg_parser.add_argument(
         '-o', '--output',help='Output path (defaults to STDOUT)')
+    arg_parser.add_argument(
+        '-v', '--verbose', default=False, action='store_const', const=True,
+        help='Verbose output')
+    arg_parser.add_argument(
+        '-vv', default=False, action='store_const', const=True,
+        help='Very verbose output')
 
     args = arg_parser.parse_args()
+
+    if args.verbose or args.vv:
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG if args.vv else logging.INFO)
 
     inbuffer = StringIO(args.infile.read())
     image = triangulize(Image.open(inbuffer), args.tile_size)
