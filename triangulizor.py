@@ -120,7 +120,7 @@ def draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
     se = (tile_x + tile_size - 1, tile_y + tile_size)
     sw = (tile_x, tile_y + tile_size)
 
-    if split == 'right':
+    if split == 'left':
         # top right triangle
         draw_triangle(nw, ne, se, top_color, draw)
         # bottom left triangle
