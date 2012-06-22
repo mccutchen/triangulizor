@@ -197,6 +197,12 @@ if __name__ == '__main__':
             msg = '%r not found' % x
             raise argparse.ArgumentTypeError(msg)
 
+    def even_int(x):
+        x = int(x)
+        if not x % 2 == 0:
+            raise argparse.ArgumentTypeError('must be an even number')
+        return x
+
     arg_parser = argparse.ArgumentParser(
         description='Applies a "triangular pixel" effect to an image.')
     arg_parser.add_argument(
@@ -206,7 +212,7 @@ if __name__ == '__main__':
         'outfile', nargs='?', default=sys.stdout,
         type=argparse.FileType('wb'))
     arg_parser.add_argument(
-        '-t', '--tile-size', type=int, default=20,
+        '-t', '--tile-size', type=even_int, default=20,
         help='Tile size (must be divisible by 2; defaults to 20)')
     arg_parser.add_argument(
         '-v', '--verbose', default=False, action='store_const', const=True,
@@ -224,6 +230,8 @@ if __name__ == '__main__':
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG if args.vv else logging.INFO)
 
+    # We need to buffer the input because neither sys.stdin nor urllib2
+    # response objects support seek()
     inbuffer = StringIO(args.infile.read())
     image = triangulize(Image.open(inbuffer), args.tile_size)
     if args.debug:
