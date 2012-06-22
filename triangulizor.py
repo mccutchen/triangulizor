@@ -210,7 +210,8 @@ if __name__ == '__main__':
         help='Image to process (path or URL; defaults to STDIN)')
     arg_parser.add_argument(
         'outfile', nargs='?', default=sys.stdout,
-        type=argparse.FileType('wb'))
+        type=argparse.FileType('wb'),
+        help='Output file (defaults to STDOUT)')
     arg_parser.add_argument(
         '-t', '--tile-size', type=even_int, default=20,
         help='Tile size (must be divisible by 2; defaults to 20)')
