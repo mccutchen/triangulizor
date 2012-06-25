@@ -1,5 +1,8 @@
 # Triangulizor
 
+Triangulizor is a little Python script to apply a "triangular pixel" effect to
+images, like so:
+
 <img src="https://github.com/mccutchen/triangulizor/raw/master/examples/in.jpg" align="middle">
 ➡☁➡
 <img src="https://github.com/mccutchen/triangulizor/raw/master/examples/out.png" align="middle">
