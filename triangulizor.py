@@ -226,8 +226,13 @@ if __name__ == '__main__':
     # We need to buffer the input because neither sys.stdin nor urllib2
     # response objects support seek()
     inbuffer = StringIO(args.infile.read())
-    image = triangulize(Image.open(inbuffer), args.tile_size)
-    if args.debug:
-        image.show()
+    try:
+        image = triangulize(Image.open(inbuffer), args.tile_size)
+    except KeyboardInterrupt:
+        logging.info('Interrupted by user, exiting...')
+        sys.exit(1)
     else:
-        image.save(args.outfile, 'png')
+        if args.debug:
+            image.show()
+        else:
+            image.save(args.outfile, 'png')
