@@ -8,9 +8,14 @@ import re
 import sys
 import urllib2
 
-import Image
-import ImageDraw
-
+try:
+    import Image
+    import ImageDraw
+except ImportError, e:
+    import PIL.Image as Image
+    import PIL.ImageDraw as ImageDraw
+except Exception, e:
+    raise
 
 def triangulize(image, tile_size):
     """Processes the given image by breaking it down into tiles of the given
