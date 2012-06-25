@@ -214,7 +214,7 @@ if __name__ == '__main__':
         '-vv', default=False, action='store_const', const=True,
         help='Very verbose output')
     arg_parser.add_argument(
-        '-d', '--debug', default=False, action='store_const', const=True,
+        '-s', '--show', default=False, action='store_const', const=True,
         help='Immediately display image instead of writing to OUTFILE.')
 
     args = arg_parser.parse_args()
@@ -232,7 +232,7 @@ if __name__ == '__main__':
         logging.info('Interrupted by user, exiting...')
         sys.exit(1)
     else:
-        if args.debug:
+        if args.show:
             image.show()
         else:
             image.save(args.outfile, 'png')

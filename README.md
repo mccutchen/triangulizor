@@ -12,15 +12,15 @@ image to triangulize! To generate the example above, either of these commands
 will do the trick:
 
 ```bash
-./triangulizor.py --debug --tile-size=16 examples/in.jpg
+./triangulizor.py --show --tile-size=16 examples/in.jpg
 ```
 
-The `--debug` flag will cause the resulting image to be displayed immediately
+The `--show` flag will cause the resulting image to be displayed immediately
 instead of written to `stdout` or to disk. You can also pass in the URL to an
 image that you want to process:
 
 ```bash
-./triangulizor.py --debug --tile-size=16 https://github.com/mccutchen/triangulizor/raw/master/examples/in.jpg
+./triangulizor.py --show --tile-size=16 https://github.com/mccutchen/triangulizor/raw/master/examples/in.jpg
 ```
 
 All command line options are given below:
@@ -30,7 +30,7 @@ $ ./triangulizor.py --help
 ```
 
 ```
-usage: triangulizor.py [-h] [-t TILE_SIZE] [-v] [-vv] [-d] [infile] [outfile]
+usage: triangulizor.py [-h] [-t TILE_SIZE] [-v] [-vv] [-s] [infile] [outfile]
 
 Applies a "triangular pixel" effect to an image.
 
@@ -44,7 +44,7 @@ optional arguments:
                         Tile size (must be divisible by 2; defaults to 20)
   -v, --verbose         Verbose output
   -vv                   Very verbose output
-  -d, --debug           Immediately display image instead of writing to
+  -s, --show            Immediately display image instead of writing to
                         OUTFILE.
 ```
 
