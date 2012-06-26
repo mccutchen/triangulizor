@@ -2,6 +2,7 @@
 
 import argparse
 from cStringIO import StringIO
+import itertools
 import logging
 import os
 import re
@@ -148,30 +149,26 @@ def draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
 
 def draw_triangle(a, b, c, color, draw):
     """Draws a triangle with the given vertices in the given color."""
-    draw.polygon([a, b, c], fill=make_color(color))
+    draw.polygon([a, b, c], fill=color)
 
 def get_average_color(colors):
     """Calculate the average color from the list of colors, where each color
     is a 3-tuple of (r, g, b) values.
     """
-    tr, tg, tb = reduce(color_reducer, colors)
+    c = reduce(color_reducer, colors)
     total = len(colors)
-    return tr/total, tg/total, tb/total
+    return tuple(v/total for v in c)
 
-def color_reducer((r1, g1, b1), (r2, g2, b2)):
+def color_reducer(c1, c2):
     """Helper function used to add two colors together when averaging."""
-    return r1+r2, g1+g2, b1+b2
+    return tuple(v1 + v2 for v1, v2 in itertools.izip(c1, c2))
 
-def get_color_dist((r1, g1, b1), (r2, g2, b2)):
+def get_color_dist(c1, c2):
     """Calculates the "distance" between two colors, where the distance is
     another color whose components are the absolute values of the difference
     between each component of the input colors.
     """
-    return (abs(r1-r2), abs(g1-g2), abs(b1-b2))
-
-def make_color((r, g, b)):
-    """Formats a color for use in an ImageDraw method."""
-    return 'rgb(%d, %d, %d)' % (r, g, b)
+    return tuple(abs(v1-v2) for v1, v2 in itertools.izip(c1, c2))
 
 def prep_image(image, tile_size):
     """Takes an image and a tile size and returns a possibly cropped version
