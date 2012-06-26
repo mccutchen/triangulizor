@@ -11,11 +11,14 @@ import urllib2
 try:
     import Image
     import ImageDraw
-except ImportError, e:
-    import PIL.Image as Image
-    import PIL.ImageDraw as ImageDraw
-except Exception, e:
-    raise
+except ImportError:
+    try:
+        import PIL.Image as Image
+        import PIL.ImageDraw as ImageDraw
+    except ImportError:
+        print >> sys.stderr, 'Could not import Python Imaging Library'
+        sys.exit(1)
+
 
 def triangulize(image, tile_size):
     """Processes the given image by breaking it down into tiles of the given
