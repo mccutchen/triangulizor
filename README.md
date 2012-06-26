@@ -44,7 +44,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -t TILE_SIZE, --tile-size TILE_SIZE
-                        Tile size (must be divisible by 2; defaults to 20)
+                        Tile size (should be divisible by 2)
   -v, --verbose         Verbose output
   -vv                   Very verbose output
   -s, --show            Immediately display image instead of writing to
