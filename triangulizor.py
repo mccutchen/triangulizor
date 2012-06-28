@@ -27,12 +27,16 @@ except ImportError:
 def triangulize(image, tile_size):
     """Processes the given image by breaking it down into tiles of the given
     size and applying a triangular effect to each tile. Returns the processed
-    image.
+    image as a PIL Image object.
+
+    The image can be given as anything suitable for passing to `Image.open`
+    (ie, the path to an image or as a file-like object containing image data).
 
     If tile_size is 0, the tile size will be guessed based on the image
     size. It will also be adjusted to be divisible by 2 if it is not already.
     """
-    assert isinstance(image, Image.Image), type(image)
+    if not isinstance(image, Image.Image):
+        image = Image.open(image)
     assert isinstance(tile_size, int)
 
     # Make sure we have a usable tile size, by guessing based on image size
@@ -249,7 +253,7 @@ if __name__ == '__main__':
     # response objects support seek()
     inbuffer = StringIO(args.infile.read())
     try:
-        image = triangulize(Image.open(inbuffer), args.tile_size)
+        image = triangulize(inbuffer, args.tile_size)
     except IOError, e:
         logging.error('Unable to open image: %s', e)
     except KeyboardInterrupt:
