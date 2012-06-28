@@ -17,8 +17,11 @@ except ImportError:
         import PIL.Image as Image
         import PIL.ImageDraw as ImageDraw
     except ImportError:
-        print >> sys.stderr, 'Could not import Python Imaging Library'
-        sys.exit(1)
+        if __name__ == '__main__':
+            print >> sys.stderr, 'Could not import Python Imaging Library'
+            sys.exit(1)
+        else:
+            raise
 
 
 def triangulize(image, tile_size):
