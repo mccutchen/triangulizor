@@ -227,6 +227,9 @@ if __name__ == '__main__':
         '-t', '--tile-size', type=int, default=0,
         help='Tile size (should be divisible by 2)')
     arg_parser.add_argument(
+        '-f', '--format', type=str, default='PNG',
+        help='Output file format (must be supported by PIL default is PNG)')
+    arg_parser.add_argument(
         '-v', '--verbose', default=False, action='store_const', const=True,
         help='Verbose output')
     arg_parser.add_argument(
@@ -256,4 +259,4 @@ if __name__ == '__main__':
         if args.show:
             image.show()
         else:
-            image.save(args.outfile)
+            image.save(args.outfile, args.format)
