@@ -256,4 +256,4 @@ if __name__ == '__main__':
         if args.show:
             image.show()
         else:
-            image.save(args.outfile, 'png')
+            image.save(args.outfile)
