@@ -4,6 +4,7 @@ import argparse
 from cStringIO import StringIO
 import itertools
 import logging
+import operator
 import os
 import re
 import sys
@@ -11,11 +12,9 @@ import urllib2
 
 try:
     import Image
-    import ImageDraw
 except ImportError:
     try:
         import PIL.Image as Image
-        import PIL.ImageDraw as ImageDraw
     except ImportError:
         if __name__ == '__main__':
             print >> sys.stderr, 'Could not import Python Imaging Library'
@@ -55,18 +54,16 @@ def triangulize(image, tile_size):
 
     # Get pixmap (for direct pixel access) and draw objects for the image.
     pix = image.load()
-    draw = ImageDraw.Draw(image)
 
     # Process the image, tile by tile
     for x, y in iter_tiles(image, tile_size):
-        process_tile(x, y, tile_size, pix, draw, image)
+        process_tile(x, y, tile_size, pix)
     return image
 
-def process_tile(tile_x, tile_y, tile_size, pix, draw, image):
+def process_tile(tile_x, tile_y, tile_size, pix):
     """Process a tile whose top left corner is at the given x and y
     coordinates.
     """
-    logging.debug('Processing tile (%d, %d)', tile_x, tile_y)
 
     # Calculate average color for each "triangle" in the given tile
     n, e, s, w = triangle_colors(tile_x, tile_y, tile_size, pix)
@@ -95,7 +92,7 @@ def process_tile(tile_x, tile_y, tile_size, pix, draw, image):
         bottom_color = get_average_color([s, e])
 
     draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
-                   draw)
+                   pix)
 
 def triangle_colors(tile_x, tile_y, tile_size, pix):
     """Extracts the average color for each triangle in the given tile. Returns
@@ -131,7 +128,7 @@ def triangle_colors(tile_x, tile_y, tile_size, pix):
     return map(get_average_color, [north, east, south, west])
 
 def draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
-                   draw):
+                   pix):
     """Draws a triangle on each half of the tile with the given coordinates
     and size.
     """
@@ -145,18 +142,51 @@ def draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
 
     if split == 'left':
         # top right triangle
-        draw_triangle(nw, ne, se, top_color, draw)
+        draw_triangle(nw, ne, se, top_color, pix)
         # bottom left triangle
-        draw_triangle(nw, sw, se, bottom_color, draw)
+        draw_triangle(nw, sw, se, bottom_color, pix)
     else:
         # top left triangle
-        draw_triangle(sw, nw, ne, top_color, draw)
+        draw_triangle(sw, nw, ne, top_color, pix)
         # bottom right triangle
-        draw_triangle(sw, se, ne, bottom_color, draw)
+        draw_triangle(sw, se, ne, bottom_color, pix)
 
-def draw_triangle(a, b, c, color, draw):
-    """Draws a triangle with the given vertices in the given color."""
-    draw.polygon([a, b, c], fill=color)
+def find_eq((x1, y1), (x2, y2)):
+    m = (y2 - y1) / (x2 - x1)
+    b = y1 - (m * x1)
+    return lambda x: (m * x) + b
+
+def draw_triangle(a, b, c, color, pix):
+    hyp = (a, c)
+    hyp_eq = find_eq(*hyp)
+
+    # What are the possible pixel values for x and y in this triangle?
+    get_x = operator.itemgetter(0)
+    get_y = operator.itemgetter(1)
+    x_range = range(min(map(get_x, hyp)), max(map(get_x, hyp)))
+    y_range = range(min(map(get_y, hyp)), max(map(get_y, hyp)))
+
+    # All further calculations are relative to the base of the triangle, as
+    # defined by the middle point we received.
+    mid_y = b[1]
+
+    # Is the base of the triangle on top?
+    if mid_y == min(y_range):
+        for x in x_range:
+            for y in y_range:
+                if abs(mid_y - y) <= abs(mid_y - hyp_eq(x)):
+                    pix[x, y] = color
+                else:
+                    break
+
+    # Base of triangle is on bottom.
+    else:
+        for x in x_range:
+            for y in reversed(y_range):
+                if abs(mid_y - y) <= abs(mid_y - hyp_eq(x)):
+                    pix[x, y] = color
+                else:
+                    break
 
 def get_average_color(colors):
     """Calculate the average color from the list of colors, where each color
