@@ -56,17 +56,17 @@ def triangulize(image, tile_size):
     pix = image.load()
 
     # Process the image, tile by tile
-    for x, y in iter_tiles(image, tile_size):
-        process_tile(x, y, tile_size, pix)
+    for tile in iter_tiles(image, pix, tile_size):
+        process_tile(tile, tile_size)
     return image
 
-def process_tile(tile_x, tile_y, tile_size, pix):
+def process_tile(tile, tile_size):
     """Process a tile whose top left corner is at the given x and y
     coordinates.
     """
 
     # Calculate average color for each "triangle" in the given tile
-    n, e, s, w = triangle_colors(tile_x, tile_y, tile_size, pix)
+    n, e, s, w = triangle_colors(tile, tile_size)
 
     # Calculate distance between triangle pairs
     d_ne = get_color_dist(n, e)
@@ -91,10 +91,9 @@ def process_tile(tile_x, tile_y, tile_size, pix):
         top_color = get_average_color([n, w])
         bottom_color = get_average_color([s, e])
 
-    draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
-                   pix)
+    draw_triangles(tile, tile_size, split, top_color, bottom_color)
 
-def triangle_colors(tile_x, tile_y, tile_size, pix):
+def triangle_colors(tile, tile_size):
     """Extracts the average color for each triangle in the given tile. Returns
     a 4-tuple of colors for the triangles in this order: North, East, South,
     West (clockwise).
@@ -102,61 +101,58 @@ def triangle_colors(tile_x, tile_y, tile_size, pix):
     quad_size = tile_size / 2
 
     north = []
-    for y in xrange(tile_y, tile_y + quad_size):
-        x_off = y - tile_y
-        for x in xrange(tile_x + x_off, tile_x + tile_size - x_off):
-            north.append(pix[x,y])
+    for y in xrange(0, quad_size):
+        for x in xrange(y, tile_size - y):
+            north.append(tile(x, y))
 
     south = []
-    for y in xrange(tile_y + quad_size, tile_y + tile_size):
-        x_off = tile_y + tile_size - y
-        for x in xrange(tile_x + x_off, tile_x + tile_size - x_off):
-            south.append(pix[x,y])
+    for y in xrange(quad_size, tile_size):
+        x_off = tile_size - y
+        for x in xrange(x_off, tile_size - x_off):
+            south.append(tile(x, y))
 
     east = []
-    for x in xrange(tile_x, tile_x + quad_size):
-        y_off = x - tile_x
-        for y in xrange(tile_y + y_off, tile_y + tile_size - y_off):
-            east.append(pix[x, y])
+    for x in xrange(quad_size):
+        for y in xrange(x, tile_size - x):
+            east.append(tile(x, y))
 
     west = []
-    for x in xrange(tile_x + quad_size, tile_x + tile_size):
-        y_off = tile_x + tile_size - x
-        for y in xrange(tile_y + y_off, tile_y + tile_size - y_off):
-            west.append(pix[x, y])
+    for x in xrange(quad_size, tile_size):
+        y_off = tile_size - x
+        for y in xrange(y_off, tile_size - y_off):
+            west.append(tile(x, y))
 
     return map(get_average_color, [north, east, south, west])
 
-def draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
-                   pix):
+def draw_triangles(tile, tile_size, split, top_color, bottom_color):
     """Draws a triangle on each half of the tile with the given coordinates
     and size.
     """
     assert split in ('right', 'left')
 
     # The four corners of this tile
-    nw = (tile_x, tile_y)
-    ne = (tile_x + tile_size - 1, tile_y)
-    se = (tile_x + tile_size - 1, tile_y + tile_size)
-    sw = (tile_x, tile_y + tile_size)
+    nw = (0, 0)
+    ne = (tile_size - 1, 0)
+    se = (tile_size - 1, tile_size)
+    sw = (0, tile_size)
 
     if split == 'left':
         # top right triangle
-        draw_triangle(nw, ne, se, top_color, pix)
+        draw_triangle(nw, ne, se, top_color, tile)
         # bottom left triangle
-        draw_triangle(nw, sw, se, bottom_color, pix)
+        draw_triangle(nw, sw, se, bottom_color, tile)
     else:
         # top left triangle
-        draw_triangle(sw, nw, ne, top_color, pix)
+        draw_triangle(sw, nw, ne, top_color, tile)
         # bottom right triangle
-        draw_triangle(sw, se, ne, bottom_color, pix)
+        draw_triangle(sw, se, ne, bottom_color, tile)
 
 def find_eq((x1, y1), (x2, y2)):
     m = (y2 - y1) / (x2 - x1)
     b = y1 - (m * x1)
     return lambda x: (m * x) + b
 
-def draw_triangle(a, b, c, color, pix):
+def draw_triangle(a, b, c, color, tile):
     hyp = (a, c)
     hyp_eq = find_eq(*hyp)
 
@@ -175,7 +171,7 @@ def draw_triangle(a, b, c, color, pix):
         for x in x_range:
             for y in y_range:
                 if abs(mid_y - y) <= abs(mid_y - hyp_eq(x)):
-                    pix[x, y] = color
+                    tile(x, y, color)
                 else:
                     break
 
@@ -184,7 +180,7 @@ def draw_triangle(a, b, c, color, pix):
         for x in x_range:
             for y in reversed(y_range):
                 if abs(mid_y - y) <= abs(mid_y - hyp_eq(x)):
-                    pix[x, y] = color
+                    tile(x, y, color)
                 else:
                     break
 
@@ -222,14 +218,23 @@ def prep_image(image, tile_size):
         crop_bounds = (0, 0, new_w, new_h)
         return image.crop(crop_bounds)
 
-def iter_tiles(image, tile_size):
+def iter_tiles(image, pix, tile_size):
     """Yields (x, y) coordinate pairs for the top left corner of each tile in
     the given image, based on the given tile size.
     """
     w, h = image.size
     for y in xrange(0, h, tile_size):
         for x in xrange(0, w, tile_size):
-            yield x, y
+            yield make_tile_proxy(x, y, pix)
+
+def make_tile_proxy(origin_x, origin_y, pix):
+    """Returns a function that wraps access to a "tile" of pixels."""
+    def tile_proxy(x, y, color=None):
+        if color is None:
+            return pix[x + origin_x, y + origin_y]
+        else:
+            pix[x + origin_x, y + origin_y] = color
+    return tile_proxy
 
 def guess_tile_size(image):
     """Try to pick an appropriate tile size based on the image's size."""
