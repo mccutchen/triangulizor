@@ -162,7 +162,7 @@ def draw_triangle(a, b, c, color, tile):
     # What are the possible pixel values for x and y in this triangle?
     get_x = operator.itemgetter(0)
     get_y = operator.itemgetter(1)
-    x_range = range(min(map(get_x, hyp)), max(map(get_x, hyp)))
+    x_range = range(min(map(get_x, hyp)), max(map(get_x, hyp))+1)
     y_range = range(min(map(get_y, hyp)), max(map(get_y, hyp)))
 
     # All further calculations are relative to the base of the triangle, as
