@@ -151,12 +151,10 @@ def find_eq((x1, y1), (x2, y2)):
     m = (y2 - y1) / (x2 - x1)
     norm_m = m / abs(m)
     b = y1 - (m * x1)
-    # print ", m: ", m, ", norm_m: ", norm_m, ", b: ", b
     return lambda x: (norm_m * x) + b
 
 def draw_triangle(a, b, c, color, tile):
     hyp = (a, c)
-    # print "hyp: ", hyp, 
     hyp_eq = find_eq(*hyp)
 
     # What are the possible pixel values for x and y in this triangle?
@@ -179,7 +177,6 @@ def draw_triangle(a, b, c, color, tile):
     else:
         for x in x_range:
             for y in range(hyp_eq(x), mid_y):
-                # print ", x: ", x, ", y: ", y, ", hyp_eq(x): ", hyp_eq(x)
                 tile(x, y, color)
                
 def get_average_color(colors):
