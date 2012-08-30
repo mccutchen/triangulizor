@@ -21,8 +21,9 @@ func Triangulize(origImg image.Image, tileSize int) (image.Image, error) {
 		log.Fatalf("Unable to prepare image for processing: %s", err)
 	}
 	tilePoints := getTilePoints(img, tileSize)
-	log.Printf("Tile coords: %v", tilePoints)
 	log.Printf("Image pixels: %d", len(img.Pix))
+	log.Printf("Tile count:   %v", len(tilePoints))
+	log.Printf("Tile coords:  %v", tilePoints)
 	for _, pt := range tilePoints {
 		tileBounds := image.Rect(pt.X, pt.Y, pt.X+tileSize, pt.Y+tileSize)
 		tile := imageToRGBA(img.SubImage(tileBounds))
@@ -50,8 +51,11 @@ func processTile(img *image.RGBA) {
 	colors := make([]color.Color, w*h)
 	for y := 0; y < h; y += 1 {
 		for x := 0; x < w; x += 1 {
-			colors = append(colors, img.At(x, y))
+			colors[x*y] = img.At(x, y)
 		}
+	}
+	if len(colors) > w*h {
+		log.Fatalf("Too many colors in tile! Expected %d, got %d", w*h, len(colors))
 	}
 	log.Printf("Got %d colors for tile", len(colors))
 	avgColor := getAverageColor(colors)
@@ -62,7 +66,9 @@ func getAverageColor(colors []color.Color) color.Color {
 	var tr, tg, tb, ta uint8
 	var colorCount = uint8(len(colors))
 	colorCount = 1
-	for _, c := range colors {
+	log.Printf("Averaging %d colors...", len(colors))
+	for i, c := range colors {
+		log.Printf("Color %04d: %v", i, c)
 		r, g, b, a := c.RGBA()
 		tr += uint8(r)
 		tg += uint8(g)
@@ -92,7 +98,6 @@ func getTilePoints(img *image.RGBA, tileSize int) (tilePts []image.Point) {
 
 func main() {
 	log.Println("Triangulizor!")
-	log.Println("HELLO")
 
 	imgPath := "examples/in.jpg"
 	imgFile, err := os.Open(imgPath)
