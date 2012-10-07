@@ -45,37 +45,44 @@ func prepImage(img image.Image, tileSize int) (*image.RGBA, error) {
 }
 
 func processTile(img *image.RGBA) {
-	w := img.Bounds().Dx()
-	h := img.Bounds().Dy()
+	b := img.Bounds()
+	w := b.Dx()
+	h := b.Dy()
 	log.Printf("Processing %dx%d tile", w, h)
 	colors := make([]color.Color, w*h)
-	for y := 0; y < h; y += 1 {
-		for x := 0; x < w; x += 1 {
-			colors[x*y] = img.At(x, y)
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.Y; x++ {
+			c := img.At(x, y)
+			if c == nil {
+				log.Fatalf("Nil color!")
+			}
+			colors[x*y] = c
 		}
 	}
-	if len(colors) > w*h {
-		log.Fatalf("Too many colors in tile! Expected %d, got %d", w*h, len(colors))
-	}
-	log.Printf("Got %d colors for tile", len(colors))
 	avgColor := getAverageColor(colors)
 	log.Printf("Avg color for tile: %v", avgColor)
 }
 
 func getAverageColor(colors []color.Color) color.Color {
 	var tr, tg, tb, ta uint8
-	var colorCount = uint8(len(colors))
-	colorCount = 1
+	count := uint8(len(colors))
 	log.Printf("Averaging %d colors...", len(colors))
-	for i, c := range colors {
-		log.Printf("Color %04d: %v", i, c)
+	nils := 0
+	for _, c := range colors {
+		// log.Printf("Color %04d: %v", i, c)
+		if c == nil {
+			nils++
+			// log.Printf("Color %04d is nil", i)
+			continue
+		}
 		r, g, b, a := c.RGBA()
 		tr += uint8(r)
 		tg += uint8(g)
 		tb += uint8(b)
 		ta += uint8(a)
 	}
-	return color.RGBA{tr / colorCount, tg / colorCount, tb / colorCount, ta / colorCount}
+	log.Printf("%d nil colors in tile", nils)
+	return color.RGBA{tr / count, tg / count, tb / count, ta / count}
 }
 
 func getTilePoints(img *image.RGBA, tileSize int) (tilePts []image.Point) {
