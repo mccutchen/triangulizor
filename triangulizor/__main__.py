@@ -23,6 +23,7 @@ if __name__ == '__main__':
             raise argparse.ArgumentTypeError(msg)
 
     arg_parser = argparse.ArgumentParser(
+        prog='triangulizor',
         description='Applies a "triangular pixel" effect to an image.')
     arg_parser.add_argument(
         'infile', nargs='?', default=sys.stdin, type=path_or_url,
@@ -36,7 +37,7 @@ if __name__ == '__main__':
         help='Tile size (should be divisible by 2)')
     arg_parser.add_argument(
         '-f', '--format', type=str, default='PNG',
-        help='Output file format (must be supported by PIL default is PNG)')
+        help='Output file format (defaults to PNG; must be supported by PIL)')
     arg_parser.add_argument(
         '-v', '--verbose', default=False, action='store_const', const=True,
         help='Verbose output')
