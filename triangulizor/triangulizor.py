@@ -1,13 +1,8 @@
 #!/usr/bin/env python2.7
 
-import argparse
-from cStringIO import StringIO
 import itertools
 import logging
-import os
-import re
 import sys
-import urllib2
 
 try:
     import Image
@@ -62,6 +57,7 @@ def triangulize(image, tile_size):
         process_tile(x, y, tile_size, pix, draw, image)
     return image
 
+
 def process_tile(tile_x, tile_y, tile_size, pix, draw, image):
     """Process a tile whose top left corner is at the given x and y
     coordinates.
@@ -97,6 +93,7 @@ def process_tile(tile_x, tile_y, tile_size, pix, draw, image):
     draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
                    draw)
 
+
 def triangle_colors(tile_x, tile_y, tile_size, pix):
     """Extracts the average color for each triangle in the given tile. Returns
     a 4-tuple of colors for the triangles in this order: North, East, South,
@@ -108,13 +105,13 @@ def triangle_colors(tile_x, tile_y, tile_size, pix):
     for y in xrange(tile_y, tile_y + quad_size):
         x_off = y - tile_y
         for x in xrange(tile_x + x_off, tile_x + tile_size - x_off):
-            north.append(pix[x,y])
+            north.append(pix[x, y])
 
     south = []
     for y in xrange(tile_y + quad_size, tile_y + tile_size):
         x_off = tile_y + tile_size - y
         for x in xrange(tile_x + x_off, tile_x + tile_size - x_off):
-            south.append(pix[x,y])
+            south.append(pix[x, y])
 
     east = []
     for x in xrange(tile_x, tile_x + quad_size):
@@ -129,6 +126,7 @@ def triangle_colors(tile_x, tile_y, tile_size, pix):
             west.append(pix[x, y])
 
     return map(get_average_color, [north, east, south, west])
+
 
 def draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
                    draw):
@@ -154,9 +152,11 @@ def draw_triangles(tile_x, tile_y, tile_size, split, top_color, bottom_color,
         # bottom right triangle
         draw_triangle(sw, se, ne, bottom_color, draw)
 
+
 def draw_triangle(a, b, c, color, draw):
     """Draws a triangle with the given vertices in the given color."""
     draw.polygon([a, b, c], fill=color)
+
 
 def get_average_color(colors):
     """Calculate the average color from the list of colors, where each color
@@ -164,25 +164,28 @@ def get_average_color(colors):
     """
     c = reduce(color_reducer, colors)
     total = len(colors)
-    return tuple(v/total for v in c)
+    return tuple(v / total for v in c)
+
 
 def color_reducer(c1, c2):
     """Helper function used to add two colors together when averaging."""
     return tuple(v1 + v2 for v1, v2 in itertools.izip(c1, c2))
+
 
 def get_color_dist(c1, c2):
     """Calculates the "distance" between two colors, where the distance is
     another color whose components are the absolute values of the difference
     between each component of the input colors.
     """
-    return tuple(abs(v1-v2) for v1, v2 in itertools.izip(c1, c2))
+    return tuple(abs(v1 - v2) for v1, v2 in itertools.izip(c1, c2))
+
 
 def prep_image(image, tile_size):
     """Takes an image and a tile size and returns a possibly cropped version
     of the image that is evenly divisible in both dimensions by the tile size.
     """
     w, h = image.size
-    x_tiles = w / tile_size # floor division
+    x_tiles = w / tile_size  # floor division
     y_tiles = h / tile_size
     new_w = x_tiles * tile_size
     new_h = y_tiles * tile_size
@@ -192,6 +195,7 @@ def prep_image(image, tile_size):
         crop_bounds = (0, 0, new_w, new_h)
         return image.crop(crop_bounds)
 
+
 def iter_tiles(image, tile_size):
     """Yields (x, y) coordinate pairs for the top left corner of each tile in
     the given image, based on the given tile size.
@@ -200,6 +204,7 @@ def iter_tiles(image, tile_size):
     for y in xrange(0, h, tile_size):
         for x in xrange(0, w, tile_size):
             yield x, y
+
 
 def guess_tile_size(image):
     """Try to pick an appropriate tile size based on the image's size."""
