@@ -1,1 +1,4 @@
+include CONTRIBUTORS
+include CHANGES.txt
+include LICENSE
 include README.rst
