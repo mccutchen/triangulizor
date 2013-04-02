@@ -30,7 +30,7 @@ def triangulize(image, tile_size):
     If tile_size is 0, the tile size will be guessed based on the image
     size. It will also be adjusted to be divisible by 2 if it is not already.
     """
-    if isinstance(image, (str, unicode)) or hasattr(image, 'read'):
+    if isinstance(image, basestring) or hasattr(image, 'read'):
         image = Image.open(image)
     assert isinstance(tile_size, int)
 
