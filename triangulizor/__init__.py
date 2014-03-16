@@ -1,2 +1,1 @@
-from .triangulizor import triangulize
-
+from .triangulizor import triangulize # noqa

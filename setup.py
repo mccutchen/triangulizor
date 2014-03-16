@@ -15,7 +15,7 @@ setup(
     license='MIT',
     author='Will McCutchen',
     author_email='will@mccutch.org',
-    classifiers = [
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
