@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name='triangulizor',
-    version='1.0.1',
+    version='1.0.2',
     description='Triangulize your images!',
     long_description=read('README.rst'),
     url='https://github.com/mccutchen/triangulizor',
@@ -30,6 +30,6 @@ setup(
     packages=['triangulizor'],
     scripts=['bin/triangulizor'],
     install_requires=[
-        "PIL >= 1.1.7",
+        "Pillow >= 2.3.1",
     ],
 )
